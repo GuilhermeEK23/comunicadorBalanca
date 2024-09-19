@@ -1,0 +1,8 @@
+{
+  "PortServer": 4000,
+  "ComPort": "COM2",
+  "BaudRate": 9600,
+  "DataBits": 8,
+  "StopBits": 1,
+  "Parity": "none"
+}
