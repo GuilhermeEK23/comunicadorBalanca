@@ -38,4 +38,4 @@ Arguments: (*Arquivo index.js do projeto*)
 ### abra o executar e digite *services.msc* e procure pelo serviço instalado e clique em iniciar  
 ![alt text](image-4.png)  
 
-## 3. Feito isso o utilizando a conexão via WebSocket **ws://localhost:4000** já vai receber o peso
+## 3. Feito isso o utilizando a conexão via WebSocket **ws://localhost:4000** enviando o comando **socket.send('solicitarPeso')** já vai receber o peso
