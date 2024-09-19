@@ -21,6 +21,7 @@ Execute no CMD **node -v** e **npm -v** se mostrar a versão significa que está
 ### Crie uma pasta chamada **comunicacao_balanca** no caminho *C:\Program Files\nodejs*
 
 - Após isso mova o arquivo configs.json do projeto para esta pasta *C:\Program Files\nodejs\comunicacao_balanca*  
+  Neste arquivo edite ele para escolher a porta COM, taxa de transferência, e outros dados da comunicação com a balança 
 ![alt text](image-3.png)
 
 ### Baixe o [NSSM](https://nssm.cc/release/nssm-2.24.zip) extraia o arquivo na pasta *C:\\* e renomeie a pasta para **nssm**
