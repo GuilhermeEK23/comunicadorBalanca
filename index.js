@@ -43,33 +43,50 @@ const parser = port.pipe(new ReadlineParser({ delimiter: '\x03' }));
 
 // Quando receber os dados da balança
 parser.on('data', (data) => {
-  const weight = data.replace(/[^0-9]/, '')/1000;
+  const weight = (data.replace(/[^0-9]/, ''))/1000;
   console.log(data)
 
   if (weight !== Number) {
     console.log(`Peso recebido: ${weight}`);
 
-    // Enviar dados ao frontend via WebSocket
-    wss.on('connection', (ws) => {
-      ws.on('message', (message) => {
-        console.log(`Mensagem recebida do cliente: ${message}`);
-    
-        if (message == 'solicitarPeso') {
-          console.log('enviando resposta')
-          ws.send(weight);
-        }
-      })
-    
-      ws.on('error', (error) => {
-        console.error("Erro no WebSocket: ", error.message);
-      });
+    // Enviar o peso para todos os clientes conectados via WebSocket
+    wss.clients.forEach((client) => {
+      if (client.readyState === 1) { // Verifica se o cliente está conectado
+        client.send(JSON.stringify({ weight }));
+      }
     });
   } else {
     console.log(`Dados inválidos ou não reconhecidos da balança: ${data}`);
   }
-
 });
 
+// Lidar com conexões WebSocket
+wss.on('connection', (ws) => {
+  console.log('Cliente conectado via WebSocket');
+
+  ws.on('message', (message) => {
+    console.log(`Mensagem recebida do cliente: ${message}`);
+
+    if (message === 'solicitarPeso') {
+      // Quando o cliente solicitar o peso, podemos forçar uma nova leitura da balança
+      const comandoSolicitarPeso = '\x05';
+      port.write(comandoSolicitarPeso, (err) => {
+        if (err) {
+          return console.error('Erro ao enviar comando para a balança: ', err.message);
+        }
+        console.log('Comando ENQ enviado por solicitação do cliente');
+      });
+    }
+  });
+
+  ws.on('error', (error) => {
+    console.error("Erro no WebSocket: ", error.message);
+  });
+
+  ws.on('close', () => {
+    console.log('Cliente desconectado do WebSocket');
+  });
+});
 
 
 // Endpoint do servidor
