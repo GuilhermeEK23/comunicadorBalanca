@@ -25,7 +25,14 @@ const port = new SerialPort({
 
 port.on('open', () => {
   console.log('Conexão com a balança estabelecida');
-
+  solicitarPeso();
+});
+  
+port.on('error', (err) => {
+  console.error('Erro na porta serial: ', err.message);
+})
+  
+const solicitarPeso = () => {
   const comandoSolicitarPeso = '\x05';
   port.write(comandoSolicitarPeso, (err) => {
     if (err) {
@@ -33,26 +40,22 @@ port.on('open', () => {
     }
     console.log('Comando ENQ envido com sucesso');
   });
-});
-
-port.on('error', (err) => {
-  console.error('Erro na porta serial: ', err.message);
-})
+}
 
 const parser = port.pipe(new ReadlineParser({ delimiter: '\x03' }));
-
+  
 // Quando receber os dados da balança
 parser.on('data', (data) => {
   const weight = (data.replace(/[^0-9]/, ''))/1000;
   console.log(data)
 
-  if (weight !== Number) {
+if (!isNaN(weight)) {
     console.log(`Peso recebido: ${weight}`);
 
     // Enviar o peso para todos os clientes conectados via WebSocket
     wss.clients.forEach((client) => {
       if (client.readyState === 1) { // Verifica se o cliente está conectado
-        client.send(JSON.stringify({ weight }));
+        client.send( weight );
       }
     });
   } else {
@@ -67,15 +70,9 @@ wss.on('connection', (ws) => {
   ws.on('message', (message) => {
     console.log(`Mensagem recebida do cliente: ${message}`);
 
-    if (message === 'solicitarPeso') {
+    if (message == 'solicitarPeso') {
       // Quando o cliente solicitar o peso, podemos forçar uma nova leitura da balança
-      const comandoSolicitarPeso = '\x05';
-      port.write(comandoSolicitarPeso, (err) => {
-        if (err) {
-          return console.error('Erro ao enviar comando para a balança: ', err.message);
-        }
-        console.log('Comando ENQ enviado por solicitação do cliente');
-      });
+      solicitarPeso();
     }
   });
 
